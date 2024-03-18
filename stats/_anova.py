@@ -2048,6 +2048,23 @@ class Anova(OrderedDict):
                 s.append('\n\n')
 
         return ''.join(s)
+
+    def get_marginal_means(self, factors):
+        marginal_means = {}
+        marginal_std_errors = {}
+        level_values = {}
+
+        for i in range(1, len(factors) + 1):
+            for efs in _xunique_combinations(factors, i):
+                ys = self.df.pivot(self.dv, rows=efs, aggregate='tolist')
+                dave = array([mean(y.flatten()) for y in ys])
+                dsem = array([stderr(y.flatten()) for y in ys])
+                
+                level_values[''.join(efs)] = [tuple(c[1] for c in rname) for rname in ys.rnames]
+                marginal_means[''.join(efs)] = dave
+                marginal_std_errors[''.join(efs)] = dsem
+
+        return marginal_means, marginal_std_errors, level_values   
                 
     def plot(self, val, xaxis,
              seplines=None,
